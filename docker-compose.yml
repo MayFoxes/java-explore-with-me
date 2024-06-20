@@ -23,7 +23,6 @@ services:
       - POSTGRES_USER=statdb
       - POSTGRES_PASSWORD=statdb
 
-
   ewm-service:
     build: ./ewm-service
     container_name: ewm-service
