@@ -8,14 +8,14 @@ services:
     depends_on:
       - stats-service-db
     environment:
-      - STAT_URL_DB=jdbc:postgresql://state_server-db:5432/statdb
+      - STAT_URL_DB=jdbc:postgresql://stats-server-db:5432/statdb
       - STAT_USERNAME_DB=statdb
       - STAT_PASSWORD_DB=statdb
 
 
   stats-service-db:
-    image: postgres:15-alpine
-    container_name: stat-server-db
+    image: postgres:13.7-alpine
+    container_name: stats-server-db
     ports:
       - "6666:5432"
     environment:
@@ -36,7 +36,7 @@ services:
       - MAIN_PASSWORD=ewmdb
 
   ewm-db:
-    image: postgres:15
+    image: postgres:13.7-alpine
     container_name: postgres-main-db
     ports:
       - "6464:5432"

@@ -3,11 +3,13 @@ package ru.practicum.ewm.repository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import ru.practicum.ewm.Constant;
 import ru.practicum.ewm.EndpointHit;
 import ru.practicum.ewm.ViewStats;
 import ru.practicum.ewm.mapper.ViewStatMapper;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Component
@@ -18,8 +20,10 @@ public class StatsRepositoryImpl implements StatsRepository {
 
     @Override
     public void saveHit(EndpointHit hit) {
+        LocalDateTime dateTime = LocalDateTime.parse(hit.getTimestamp(), DateTimeFormatter.ofPattern(Constant.DATE_FORMAT));
+
         jdbcTemplate.update("INSERT INTO stats (app, uri, ip, request_time) VALUES (?, ?, ?, ?)",
-                hit.getApp(), hit.getUri(), hit.getIp(), hit.getRequestTime());
+                hit.getApp(), hit.getUri(), hit.getIp(), dateTime);
     }
 
     @Override

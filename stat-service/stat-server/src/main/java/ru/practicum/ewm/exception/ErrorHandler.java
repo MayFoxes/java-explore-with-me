@@ -29,14 +29,13 @@ public class ErrorHandler {
     }
 
     private ErrorResponse handleException(final Exception e, HttpStatus status) {
-        String error = status.is4xxClientError() ? "Incorrectly made request." : "Internal Server Error";
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         String errorStatus = status.name();
         String errorMessage = e.getMessage();
 
-        log.error("{} - Status: {}, Description: {}, Timestamp: {}",
-                errorMessage, errorStatus, error, timestamp);
+        log.error("{} - Status: {}, Timestamp: {}",
+                errorMessage, errorStatus, timestamp);
 
-        return new ErrorResponse(errorMessage, error, errorStatus, timestamp);
+        return new ErrorResponse(errorMessage, errorStatus, timestamp);
     }
 }

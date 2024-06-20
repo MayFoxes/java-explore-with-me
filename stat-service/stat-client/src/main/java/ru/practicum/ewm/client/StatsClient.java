@@ -36,7 +36,6 @@ public class StatsClient extends BaseClient {
                 "unique", unique,
                 "uris", uris != null ? String.join(",", uris) : null
         );
-
         return get(uri, parameters);
     }
 
