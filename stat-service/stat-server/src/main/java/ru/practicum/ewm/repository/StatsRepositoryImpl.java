@@ -28,16 +28,16 @@ public class StatsRepositoryImpl implements StatsRepository {
 
     @Override
     public List<ViewStats> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
-        String query = unique ?
+        StringBuilder query = new StringBuilder(unique ?
                 "SELECT app, uri, COUNT (DISTINCT ip) AS hits FROM stats WHERE (request_time >= ? AND request_time <= ?) " :
-                "SELECT app, uri, COUNT (ip) AS hits FROM stats WHERE (request_time >= ? AND request_time <= ?) ";
+                "SELECT app, uri, COUNT (ip) AS hits FROM stats WHERE (request_time >= ? AND request_time <= ?) ");
 
         if (!uris.isEmpty()) {
-            query += "AND uri IN ('" + String.join("', '", uris) + "') ";
+            query.append("AND uri IN ('").append(String.join("', '", uris)).append("') ");
         }
 
-        query += " GROUP BY app, uri ORDER BY hits DESC";
+        query.append(" GROUP BY app, uri ORDER BY hits DESC");
 
-        return jdbcTemplate.query(query, viewStatMapper, start, end);
+        return jdbcTemplate.query(query.toString(), viewStatMapper, start, end);
     }
 }
