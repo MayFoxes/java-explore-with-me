@@ -23,6 +23,7 @@ import ru.practicum.ewm.events.dto.AdminEventParams;
 import ru.practicum.ewm.events.dto.EventFullDto;
 import ru.practicum.ewm.events.dto.UpdateEventRequest;
 import ru.practicum.ewm.events.service.EventService;
+import ru.practicum.ewm.users.dto.NewUserRequest;
 import ru.practicum.ewm.users.dto.UserDto;
 import ru.practicum.ewm.users.model.User;
 import ru.practicum.ewm.users.service.UserService;
@@ -74,7 +75,7 @@ public class AdminController {
     }
 
     @PostMapping("/users")
-    public User addUser(@Valid @RequestBody UserDto user) {
+    public User addUser(@Valid @RequestBody NewUserRequest user) {
         log.info("POST request from Admin to add user");
         return userService.createUser(user);
     }

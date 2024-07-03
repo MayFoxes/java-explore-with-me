@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.exception.UniqueException;
+import ru.practicum.ewm.users.dto.NewUserRequest;
 import ru.practicum.ewm.users.dto.UserDto;
 import ru.practicum.ewm.users.dto.UserDtoMapper;
 import ru.practicum.ewm.users.model.User;
@@ -30,7 +31,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User createUser(UserDto userDto) {
+    public User createUser(NewUserRequest userDto) {
         try {
             return userRepository.save(UserDtoMapper.toUser(userDto));
         } catch (DataIntegrityViolationException e) {
