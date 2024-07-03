@@ -17,26 +17,26 @@ import java.util.List;
 public class ErrorHandler {
 
     @ExceptionHandler({ValidationException.class, ConstraintViolationException.class})
-    public ErrorResponse badRequestError(final Exception e) {
+    public ApiError badRequestError(final Exception e) {
         return handleException(e, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(NotFoundException.class)
-    public ErrorResponse notFoundError(final Exception e) {
+    public ApiError notFoundError(final Exception e) {
         return handleException(e, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler
-    public ErrorResponse internalServerError(final Exception e) {
+    public ApiError internalServerError(final Exception e) {
         return handleException(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ExceptionHandler(UniqueException.class)
-    public ErrorResponse conflictError(final Exception e) {
+    @ExceptionHandler({UniqueException.class, ConflictException.class})
+    public ApiError conflictError(final Exception e) {
         return handleException(e, HttpStatus.CONFLICT);
     }
 
-    private ErrorResponse handleException(final Exception e, HttpStatus status) {
+    private ApiError handleException(final Exception e, HttpStatus status) {
         List<String> errors = Collections.singletonList(Arrays.toString(e.getStackTrace()));
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         String errorStatus = status.name();
@@ -46,6 +46,6 @@ public class ErrorHandler {
         log.error("errors: {}; message: {}; reason: {}; status: {};  Timestamp: {}",
                 errors, errorMessage, reason, errorStatus, timestamp);
 
-        return new ErrorResponse(errors, errorMessage, reason, errorStatus, timestamp);
+        return new ApiError(errorStatus, reason, errorMessage, timestamp, errors);
     }
 }

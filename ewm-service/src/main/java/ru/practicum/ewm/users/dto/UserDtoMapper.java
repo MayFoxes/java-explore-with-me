@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 @UtilityClass
 public class UserDtoMapper {
 
-    public User dtoToUser(UserDto user) {
+    public User toUser(UserDto user) {
         return User.builder()
                 .email(user.getEmail())
                 .id(user.getId())
@@ -18,7 +18,7 @@ public class UserDtoMapper {
                 .build();
     }
 
-    public UserDto userToDto(User user) {
+    public UserDto toDto(User user) {
         if (user.getEmail() == null || user.getEmail().isEmpty()) {
             throw new ValidationException("Email can not be empty!");
         }
@@ -32,9 +32,16 @@ public class UserDtoMapper {
                 .build();
     }
 
+    public UserShortDto toShortDto(User user) {
+        return UserShortDto.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .build();
+    }
+
     public List<UserDto> toDtos(List<User> users) {
         return users.stream()
-                .map(UserDtoMapper::userToDto)
+                .map(UserDtoMapper::toDto)
                 .collect(Collectors.toList());
     }
 }

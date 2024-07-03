@@ -1,4 +1,4 @@
-package ru.practicum.ewm.users.model;
+package ru.practicum.ewm.events.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,19 +11,25 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 
-@Entity
 @Data
+@Builder
+@Entity
+@Table(name = "LOCATIONS")
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "USERS")
-@Builder
-public class User {
+public class Location {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(nullable = false)
-    private String name;
-    @Column(nullable = false, unique = true)
-    private String email;
+    @Min(-90)
+    @Max(90)
+    private Double lat;
+    @Column(nullable = false)
+    @Min(-180)
+    @Max(180)
+    private Double lon;
 }

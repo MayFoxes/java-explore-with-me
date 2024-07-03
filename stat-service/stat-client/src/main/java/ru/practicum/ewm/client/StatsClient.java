@@ -1,10 +1,12 @@
 package ru.practicum.ewm.client;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Service;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.ewm.EndpointHit;
 
@@ -13,9 +15,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
+@Service
 public class StatsClient extends BaseClient {
-
-    public StatsClient(@Value("${stat-service.url}") String serverUrl, RestTemplateBuilder builder) {
+    @Autowired
+    public StatsClient(@Value("${stat-server.url}") String serverUrl, RestTemplateBuilder builder) {
         super(
                 builder
                         .uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl))
@@ -34,7 +37,7 @@ public class StatsClient extends BaseClient {
                 "start", encode(start),
                 "end", encode(end),
                 "unique", unique,
-                "uris", uris != null ? String.join(",", uris) : null
+                "uris", String.join(",", uris)
         );
         return get(uri, parameters);
     }

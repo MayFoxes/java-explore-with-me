@@ -6,8 +6,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.exception.UniqueException;
-import ru.practicum.ewm.users.dto.UserDtoMapper;
 import ru.practicum.ewm.users.dto.UserDto;
+import ru.practicum.ewm.users.dto.UserDtoMapper;
 import ru.practicum.ewm.users.model.User;
 import ru.practicum.ewm.users.repository.UserRepository;
 import ru.practicum.ewm.utility.Pagination;
@@ -32,7 +32,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User createUser(UserDto userDto) {
         try {
-            return userRepository.save(UserDtoMapper.dtoToUser(userDto));
+            return userRepository.save(UserDtoMapper.toUser(userDto));
         } catch (DataIntegrityViolationException e) {
             throw new UniqueException(String.format("Email:%s is not unique.", userDto.getEmail()));
         }

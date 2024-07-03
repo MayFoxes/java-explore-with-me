@@ -1,7 +1,7 @@
 package ru.practicum.ewm.category.dto;
 
 import lombok.experimental.UtilityClass;
-import ru.practicum.ewm.category.modul.Category;
+import ru.practicum.ewm.category.model.Category;
 
 import java.util.List;
 import java.util.stream.Collectors;
