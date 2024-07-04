@@ -67,6 +67,7 @@ public class EventDtoMapper {
                 .requestModeration(request.getRequestModeration().equals(event.getRequestModeration()) ? event.getRequestModeration() : request.getRequestModeration())
                 .initiator(event.getInitiator())
                 .created(event.getCreated())
+                .state(event.getState())
                 .eventDate(request.getEventDate() == null ? event.getEventDate() : request.getEventDate())
                 .build();
     }

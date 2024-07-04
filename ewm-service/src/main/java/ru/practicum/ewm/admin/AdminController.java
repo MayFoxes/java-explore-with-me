@@ -1,7 +1,8 @@
 package ru.practicum.ewm.admin;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -30,14 +31,14 @@ import ru.practicum.ewm.users.service.UserService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
 @RequestMapping("/admin")
-@AllArgsConstructor
+@RequiredArgsConstructor
+@Validated
 @Slf4j
 public class AdminController {
     private final UserService userService;
@@ -46,7 +47,7 @@ public class AdminController {
     private final CompilationService compilationService;
 
     @PostMapping("/categories")
-    public Category createCategoryByAdmin(@Valid @RequestBody NewCategoryDto dto) {
+    public Category createCategoryByAdmin(@RequestBody @Valid NewCategoryDto dto) {
         log.info("POST request from Admin to add category with name:{}.", dto.getName());
         return categoryService.createCategory(dto);
     }
@@ -59,15 +60,15 @@ public class AdminController {
 
     @PutMapping("/categories/{catId}")
     public Category updateCategoryByAdmin(@PathVariable Long catId,
-                                          @Valid @RequestBody NewCategoryDto dto
+                                          @RequestBody @Valid NewCategoryDto dto
     ) {
         log.info("PUT request from Admin to update category:{}.", catId);
         return categoryService.updateCategory(catId, dto);
     }
 
     @GetMapping("/users")
-    public List<UserDto> getUsers(@PositiveOrZero @RequestParam(defaultValue = "0") Integer from,
-                                  @Positive @RequestParam(defaultValue = "10") Integer size,
+    public List<UserDto> getUsers(@RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+                                  @RequestParam(defaultValue = "10") @Positive Integer size,
                                   @RequestParam(required = false) List<Integer> ids,
                                   HttpServletRequest httpServletRequest
     ) {
@@ -76,7 +77,7 @@ public class AdminController {
     }
 
     @PostMapping("/users")
-    public User addUser(@Valid @RequestBody NewUserRequest user) {
+    public User addUser(@RequestBody @Valid NewUserRequest user) {
         log.info("POST request from Admin to add user");
         return userService.createUser(user);
     }
@@ -94,7 +95,7 @@ public class AdminController {
     }
 
     @PatchMapping("/events/{eventId}")
-    public EventFullDto updateEventAdmin(@PathVariable @Min(1) Long eventId,
+    public EventFullDto updateEventAdmin(@PathVariable Long eventId,
                                          @RequestBody @Valid UpdateEventRequest update) {
         log.info("PATCH request to update event");
         return eventService.updateEventFromAdmin(eventId, update);

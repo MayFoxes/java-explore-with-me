@@ -1,8 +1,9 @@
 package ru.practicum.ewm.events.controller.priv;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,7 +29,8 @@ import java.util.List;
 
 @RestController
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
+@Validated
 @RequestMapping(path = "/users/{userId}/events")
 public class EventPrivateController {
     private final EventService eventService;

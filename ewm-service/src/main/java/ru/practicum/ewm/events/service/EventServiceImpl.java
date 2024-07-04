@@ -115,10 +115,9 @@ public class EventServiceImpl implements EventService {
     public EventFullDto updateEventFromAdmin(Long eventId, UpdateEventRequest update) {
         Event tempEvent = checkEvent(eventId);
         checkEventState(tempEvent.getState());
-        Category cat = checkCategory(update.getCategory());
         checkDateAndTime(update.getEventDate());
         Event updatedEvent = EventDtoMapper.toUpdate(tempEvent, update);
-        updatedEvent.setCategory(cat);
+        updatedEvent.setCategory(update.getCategory() == null ? tempEvent.getCategory() : checkCategory(update.getCategory()));
         UpdateEventState state = update.getState();
 
         if (state != null) {
@@ -167,10 +166,10 @@ public class EventServiceImpl implements EventService {
         checkUser(userId);
         Event tempEvent = checkEventExistForUser(userId, eventId);
         if (tempEvent.getState().equals(EventState.PUBLISHED)) {
-            throw new ConflictException("Статус события не может быть обновлен, так как со статусом PUBLISHED");
+            throw new ConflictException("The event status cannot be updated because the status is PUBLISHED");
         }
         if (!tempEvent.getInitiator().getId().equals(userId)) {
-            throw new ConflictException("Пользователь с id= " + userId + " не автор события");
+            throw new ConflictException("The User:" + userId + " is not the author of the event");
         }
         Event updatedEv = EventDtoMapper.toUpdate(tempEvent, update);
         checkDateAndTime(updatedEv.getEventDate());
@@ -344,7 +343,7 @@ public class EventServiceImpl implements EventService {
 
     private void checkDateAndTime(LocalDateTime dateTime) {
         if (dateTime.isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new ConflictException("Event date has to be at least 2 hours after current moment");
+            throw new ValidationException("Event date has to be at least 2 hours after current moment");
         }
     }
 
