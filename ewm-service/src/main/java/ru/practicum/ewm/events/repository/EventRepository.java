@@ -2,6 +2,7 @@ package ru.practicum.ewm.events.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.events.model.Event;
 import ru.practicum.ewm.utility.Pagination;
 
@@ -14,4 +15,6 @@ public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecific
     Optional<Event> findByInitiatorIdAndId(Long userId, Long eventId);
 
     List<Event> findAllByIdIn(List<Long> ids);
+
+    List<Event> findByCategory(Category category);
 }

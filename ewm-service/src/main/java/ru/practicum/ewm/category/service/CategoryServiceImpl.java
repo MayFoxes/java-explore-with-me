@@ -9,6 +9,9 @@ import ru.practicum.ewm.category.dto.CategoryDtoMapper;
 import ru.practicum.ewm.category.dto.NewCategoryDto;
 import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.category.repository.CategoryRepository;
+import ru.practicum.ewm.events.model.Event;
+import ru.practicum.ewm.events.repository.EventRepository;
+import ru.practicum.ewm.exception.ConflictException;
 import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.exception.UniqueException;
 import ru.practicum.ewm.utility.Pagination;
@@ -21,6 +24,7 @@ import java.util.stream.Collectors;
 @Transactional
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
+    private final EventRepository eventRepository;
 
     @Override
     public Category createCategory(NewCategoryDto categoryDto) {
@@ -33,6 +37,11 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public void deleteCategory(Long id) {
+        Category category = checkExist(id);
+        List<Event> events = eventRepository.findByCategory(category);
+        if (!events.isEmpty()) {
+            throw new ConflictException("Can't delete category due to using for some events");
+        }
         categoryRepository.delete(checkExist(id));
     }
 

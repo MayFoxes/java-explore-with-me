@@ -77,7 +77,6 @@ public class CompilationServiceImpl implements CompilationService {
 
     @Override
     public List<CompilationDto> getCompilations(Boolean pinned, Integer from, Integer size) {
-
         PageRequest pageRequest = PageRequest.of(from, size);
         List<Compilation> compilations;
         if (pinned == null) {
@@ -92,7 +91,7 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     @Override
-    public CompilationDto findByIdCompilation(Long compId) {
+    public CompilationDto getCompilationById(Long compId) {
         return CompilationDtoMapper.toDto(checkCompilation(compId));
     }
 

@@ -25,7 +25,7 @@ public class EventPublicController {
     @GetMapping
     public List<EventShortDto> getAllEvents(@Valid EventParams params,
                                             HttpServletRequest request) {
-        log.info("GET request to get all events with next param:{}", params);
+        log.info("GET request to get all events with params");
         return eventService.getAllEvents(params, request);
     }
 

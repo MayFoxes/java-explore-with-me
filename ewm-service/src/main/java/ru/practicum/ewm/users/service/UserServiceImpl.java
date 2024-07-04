@@ -1,11 +1,9 @@
 package ru.practicum.ewm.users.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.exception.NotFoundException;
-import ru.practicum.ewm.exception.UniqueException;
 import ru.practicum.ewm.users.dto.NewUserRequest;
 import ru.practicum.ewm.users.dto.UserDto;
 import ru.practicum.ewm.users.dto.UserDtoMapper;
@@ -24,7 +22,7 @@ public class UserServiceImpl implements UserService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<UserDto> getUsers(List<Integer> ids, Integer from, Integer size) {
+    public List<UserDto> getUsers(List<Long> ids, Integer from, Integer size) {
         Pagination pagination = new Pagination(from, size);
         return ids == null ? UserDtoMapper.toDtos(userRepository.findAll(pagination).stream().collect(Collectors.toList())) :
                 UserDtoMapper.toDtos(userRepository.findAllByIdIn(ids, pagination));
@@ -32,11 +30,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User createUser(NewUserRequest userDto) {
-        try {
-            return userRepository.save(UserDtoMapper.toUser(userDto));
-        } catch (DataIntegrityViolationException e) {
-            throw new UniqueException(String.format("Email:%s is not unique.", userDto.getEmail()));
-        }
+        return userRepository.save(UserDtoMapper.toUser(userDto));
+
     }
 
     @Override

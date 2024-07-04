@@ -1,8 +1,6 @@
 package ru.practicum.ewm.events.model.enums;
 
-public enum UpdateEventState {
-    SEND_TO_REVIEW,
-    CANCEL_REVIEW,
+public enum EventAdminState {
     PUBLISH_EVENT,
     REJECT_EVENT;
 }

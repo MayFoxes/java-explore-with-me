@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 import ru.practicum.ewm.events.model.Location;
-import ru.practicum.ewm.events.model.enums.UpdateEventState;
 
 import javax.validation.Valid;
 import javax.validation.constraints.PositiveOrZero;
@@ -35,6 +34,5 @@ public class UpdateEventRequest {
     private Boolean requestModeration;
     @Size(min = 3, max = 120)
     private String title;
-    private UpdateEventState state;
     private Boolean paid;
 }

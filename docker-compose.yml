@@ -30,6 +30,7 @@ services:
       - "8080:8080"
     depends_on:
       - ewm-db
+      - stat-server
     environment:
       - MAIN_DB=jdbc:postgresql://postgres-main-db:5432/ewmdb
       - MAIN_USER=ewmdb

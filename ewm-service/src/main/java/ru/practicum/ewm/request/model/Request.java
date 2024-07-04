@@ -30,18 +30,14 @@ public class Request {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     @Column(nullable = false)
     private LocalDateTime created;
-
     @ManyToOne
     @JoinColumn(name = "EVENT_ID")
     private Event event;
-
     @ManyToOne
     @JoinColumn(name = "REQUESTER_ID")
     private User requester;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "STATUS", nullable = false)
     private RequestStatus status;

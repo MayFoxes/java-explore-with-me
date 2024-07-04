@@ -18,11 +18,12 @@ import ru.practicum.ewm.events.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.ewm.events.dto.EventRequestStatusUpdateResult;
 import ru.practicum.ewm.events.dto.EventShortDto;
 import ru.practicum.ewm.events.dto.NewEventDto;
-import ru.practicum.ewm.events.dto.UpdateEventRequest;
+import ru.practicum.ewm.events.dto.UpdateEventUserRequest;
 import ru.practicum.ewm.events.service.EventService;
 import ru.practicum.ewm.request.dto.ParticipationRequestDto;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
@@ -59,9 +60,9 @@ public class EventPrivateController {
     }
 
     @PatchMapping("/{eventId}")
-    public EventFullDto updateEventByOwner(@PathVariable Long userId,
-                                           @PathVariable Long eventId,
-                                           @RequestBody @Valid UpdateEventRequest update) {
+    public EventFullDto updateEventByOwner(@PathVariable @Min(0) Long userId,
+                                           @PathVariable @Min(0) Long eventId,
+                                           @RequestBody @Valid UpdateEventUserRequest update) {
         log.info("PATCH request from user:{} to update their event:{}", userId, eventId);
         return eventService.updateUserEventById(userId, eventId, update);
     }

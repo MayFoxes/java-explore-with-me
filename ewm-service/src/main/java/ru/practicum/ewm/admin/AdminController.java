@@ -2,16 +2,17 @@ package ru.practicum.ewm.admin;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.ewm.category.dto.NewCategoryDto;
 import ru.practicum.ewm.category.model.Category;
@@ -22,14 +23,13 @@ import ru.practicum.ewm.compilation.dto.UpdateCompilationDto;
 import ru.practicum.ewm.compilation.service.CompilationService;
 import ru.practicum.ewm.events.dto.AdminEventParams;
 import ru.practicum.ewm.events.dto.EventFullDto;
-import ru.practicum.ewm.events.dto.UpdateEventRequest;
+import ru.practicum.ewm.events.dto.UpdateEventAdminRequest;
 import ru.practicum.ewm.events.service.EventService;
 import ru.practicum.ewm.users.dto.NewUserRequest;
 import ru.practicum.ewm.users.dto.UserDto;
 import ru.practicum.ewm.users.model.User;
 import ru.practicum.ewm.users.service.UserService;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
@@ -47,18 +47,20 @@ public class AdminController {
     private final CompilationService compilationService;
 
     @PostMapping("/categories")
+    @ResponseStatus(HttpStatus.CREATED)
     public Category createCategoryByAdmin(@RequestBody @Valid NewCategoryDto dto) {
         log.info("POST request from Admin to add category with name:{}.", dto.getName());
         return categoryService.createCategory(dto);
     }
 
     @DeleteMapping("/categories/{catId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCategoryByAdmin(@PathVariable Long catId) {
         log.info("DELETE request from Admin to delete category:{}.", catId);
         categoryService.deleteCategory(catId);
     }
 
-    @PutMapping("/categories/{catId}")
+    @PatchMapping("/categories/{catId}")
     public Category updateCategoryByAdmin(@PathVariable Long catId,
                                           @RequestBody @Valid NewCategoryDto dto
     ) {
@@ -69,20 +71,21 @@ public class AdminController {
     @GetMapping("/users")
     public List<UserDto> getUsers(@RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
                                   @RequestParam(defaultValue = "10") @Positive Integer size,
-                                  @RequestParam(required = false) List<Integer> ids,
-                                  HttpServletRequest httpServletRequest
+                                  @RequestParam(required = false) List<Long> ids
     ) {
         log.info("GET request from Admin to get users IN:{} from:{} with size:{}", ids, from, size);
         return userService.getUsers(ids, from, size);
     }
 
     @PostMapping("/users")
+    @ResponseStatus(HttpStatus.CREATED)
     public User addUser(@RequestBody @Valid NewUserRequest user) {
         log.info("POST request from Admin to add user");
         return userService.createUser(user);
     }
 
     @DeleteMapping("/users/{userId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUser(@PathVariable Long userId) {
         log.info("DELETE request from Admin to delete user:{}", userId);
         userService.deleteUser(userId);
@@ -96,12 +99,13 @@ public class AdminController {
 
     @PatchMapping("/events/{eventId}")
     public EventFullDto updateEventAdmin(@PathVariable Long eventId,
-                                         @RequestBody @Valid UpdateEventRequest update) {
-        log.info("PATCH request to update event");
+                                         @RequestBody @Valid UpdateEventAdminRequest update) {
+        log.info("PATCH request to update event:{}", eventId);
         return eventService.updateEventFromAdmin(eventId, update);
     }
 
     @PostMapping("/compilations")
+    @ResponseStatus(HttpStatus.CREATED)
     public CompilationDto addCompilation(@RequestBody @Valid NewCompilationDto compilationDto) {
         log.info("POST request to add compilation");
         return compilationService.addCompilation(compilationDto);
@@ -115,6 +119,7 @@ public class AdminController {
     }
 
     @DeleteMapping("/compilations/{compId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCompilation(@PathVariable Long compId) {
         log.info("DELETE request to delete compilation");
         compilationService.deleteCompilation(compId);

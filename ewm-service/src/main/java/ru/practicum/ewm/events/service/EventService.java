@@ -7,7 +7,8 @@ import ru.practicum.ewm.events.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.ewm.events.dto.EventRequestStatusUpdateResult;
 import ru.practicum.ewm.events.dto.EventShortDto;
 import ru.practicum.ewm.events.dto.NewEventDto;
-import ru.practicum.ewm.events.dto.UpdateEventRequest;
+import ru.practicum.ewm.events.dto.UpdateEventAdminRequest;
+import ru.practicum.ewm.events.dto.UpdateEventUserRequest;
 import ru.practicum.ewm.request.dto.ParticipationRequestDto;
 
 import javax.servlet.http.HttpServletRequest;
@@ -19,13 +20,13 @@ public interface EventService {
 
     List<EventFullDto> getAllEventFromAdmin(AdminEventParams params);
 
-    EventFullDto updateEventFromAdmin(Long eventId, UpdateEventRequest update);
+    EventFullDto updateEventFromAdmin(Long eventId, UpdateEventAdminRequest update);
 
     List<EventShortDto> getUserEvents(Long userId, Integer from, Integer size);
 
     EventFullDto getUserEventById(Long userId, Long eventId);
 
-    EventFullDto updateUserEventById(Long userId, Long eventId, UpdateEventRequest update);
+    EventFullDto updateUserEventById(Long userId, Long eventId, UpdateEventUserRequest update);
 
     EventRequestStatusUpdateResult updateEventStatusRequest(Long userId, Long eventId, EventRequestStatusUpdateRequest update);
 

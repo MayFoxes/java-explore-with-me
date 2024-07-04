@@ -7,7 +7,7 @@ import ru.practicum.ewm.users.model.User;
 import java.util.List;
 
 public interface UserService {
-    List<UserDto> getUsers(List<Integer> ids, Integer from, Integer size);
+    List<UserDto> getUsers(List<Long> ids, Integer from, Integer size);
 
     User createUser(NewUserRequest userDto);
 

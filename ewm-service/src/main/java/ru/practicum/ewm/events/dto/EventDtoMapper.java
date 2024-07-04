@@ -13,10 +13,11 @@ import java.util.stream.Collectors;
 public class EventDtoMapper {
     public Event toEvent(NewEventDto dto) {
         return Event.builder()
+                .id(null)
                 .annotation(dto.getAnnotation())
                 .description(dto.getDescription())
                 .eventDate(dto.getEventDate())
-                .created(LocalDateTime.now())
+                .createdDate(LocalDateTime.now())
                 .paid(dto.isPaid())
                 .participantLimit(dto.getParticipantLimit())
                 .requestModeration(dto.isRequestModeration())
@@ -29,16 +30,16 @@ public class EventDtoMapper {
                 .id(event.getId())
                 .annotation(event.getAnnotation())
                 .category(CategoryDtoMapper.toDto(event.getCategory()))
-                .createdOn(event.getCreated())
+                .createdOn(event.getCreatedDate())
                 .description(event.getDescription())
                 .eventDate(event.getEventDate())
                 .initiator(UserDtoMapper.toShortDto(event.getInitiator()))
                 .location(event.getLocation())
                 .paid(event.getPaid())
                 .participantLimit(event.getParticipantLimit())
-                .publishedOn(event.getPublishedOn())
+                .publishedOn(event.getPublisherDate())
                 .requestModeration(event.getRequestModeration())
-                .state(event.getState())
+                .state(event.getEventStatus())
                 .title(event.getTitle())
                 .build();
     }
@@ -66,8 +67,8 @@ public class EventDtoMapper {
                 .paid(request.getPaid().equals(event.getPaid()) ? event.getPaid() : request.getPaid())
                 .requestModeration(request.getRequestModeration().equals(event.getRequestModeration()) ? event.getRequestModeration() : request.getRequestModeration())
                 .initiator(event.getInitiator())
-                .created(event.getCreated())
-                .state(event.getState())
+                .createdDate(event.getCreatedDate())
+                .eventStatus(event.getEventStatus())
                 .eventDate(request.getEventDate() == null ? event.getEventDate() : request.getEventDate())
                 .build();
     }

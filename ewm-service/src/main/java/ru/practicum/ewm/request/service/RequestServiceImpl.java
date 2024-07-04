@@ -22,26 +22,30 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class RequestServiceImpl implements RequestService {
     private final RequestRepository requestRepository;
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
 
-    @Transactional
     @Override
     public ParticipationRequestDto addNewRequest(Long userId, Long eventId) {
         User user = checkUser(userId);
-        Event event = checkEvent(eventId);
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException(String.format("Event:%d is not found", eventId)));
         validateNewRequest(event, userId, eventId);
         Request request = Request.builder()
                 .created(LocalDateTime.now())
                 .requester(user)
                 .event(event)
-                .status(event.getRequestModeration() &&
-                        event.getParticipantLimit() != 0 ? RequestStatus.PENDING : RequestStatus.CONFIRMED).build();
+                .status(event.getRequestModeration() ? RequestStatus.PENDING : RequestStatus.CONFIRMED)
+                .build();
         requestRepository.save(request);
+
+        if (event.getParticipantLimit() == 0) {
+            request.setStatus(RequestStatus.CONFIRMED);
+        }
+
         return RequestDtoMapper.toParticipationRequestDto(request);
     }
 
@@ -67,19 +71,14 @@ public class RequestServiceImpl implements RequestService {
         return RequestDtoMapper.toParticipationRequestDto(requestAfterSave);
     }
 
-    private User checkUser(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(String.format("User:%d is not found.", id)));
-    }
-
-    private Event checkEvent(Long id) {
-        return eventRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(String.format("Event:%d is not found.", id)));
+    private User checkUser(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(String.format("User:%d is not found", userId)));
     }
 
     private Request checkRequest(Long requestId, Long userId) {
         return requestRepository.findByIdAndRequesterId(requestId, userId)
-                .orElseThrow(() -> new NotFoundException(String.format("Request:%d is not found.", requestId)));
+                .orElseThrow(() -> new NotFoundException(String.format("Request:%d is not found", requestId)));
     }
 
     private void validateNewRequest(Event event, Long userId, Long eventId) {
@@ -89,7 +88,7 @@ public class RequestServiceImpl implements RequestService {
         if (event.getParticipantLimit() > 0 && event.getParticipantLimit() <= requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED)) {
             throw new ConflictException("Participant limit is exceeded.");
         }
-        if (!event.getState().equals(EventState.PUBLISHED)) {
+        if (!event.getEventStatus().equals(EventState.PUBLISHED)) {
             throw new ConflictException("Event not PUBLISHED.");
         }
         if (requestRepository.existsByEventIdAndRequesterId(eventId, userId)) {

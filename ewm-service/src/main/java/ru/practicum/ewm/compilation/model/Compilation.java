@@ -22,17 +22,17 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "compilations")
+@Entity(name = "COMPILATIONS")
 public class Compilation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToMany
-    @JoinTable(name = "compilations_event", joinColumns = @JoinColumn(name = "compilation_id"),
-            inverseJoinColumns = @JoinColumn(name = "event_id"))
+    @JoinTable(name = "COMPILATION_EVENT", joinColumns = @JoinColumn(name = "COMPILATION_ID"),
+            inverseJoinColumns = @JoinColumn(name = "EVENT_ID"))
     private Set<Event> events;
-    @Column(name = "pinned")
+    @Column(name = "PINNED")
     private Boolean pinned;
-    @Column(name = "title", nullable = false, length = 50)
+    @Column(name = "TITLE", nullable = false, length = 50)
     private String title;
 }
