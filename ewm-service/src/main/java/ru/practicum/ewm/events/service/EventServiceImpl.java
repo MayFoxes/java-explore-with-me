@@ -3,13 +3,13 @@ package ru.practicum.ewm.events.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.EndpointHit;
 import ru.practicum.ewm.ViewStats;
 import ru.practicum.ewm.category.model.Category;
@@ -44,6 +44,7 @@ import ru.practicum.ewm.utility.Pagination;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -53,7 +54,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Slf4j
 public class EventServiceImpl implements EventService {
     private final StatsClient statsClient;
     private final EventRepository eventRepository;
@@ -102,21 +103,16 @@ public class EventServiceImpl implements EventService {
                 .map(EventDtoMapper::toEventFullDto)
                 .collect(Collectors.toList());
 
-        Map<Long, List<Request>> confirmedRequestsCountMap = getConfirmedRequestsCount(events.toList());
+        Map<Long, List<Request>> confirmedRequestsCount = getConfirmedRequestsCount(events.toList());
         for (EventFullDto event : result) {
-            List<Request> requests = confirmedRequestsCountMap.getOrDefault(event.getId(), List.of());
+            List<Request> requests = confirmedRequestsCount.getOrDefault(event.getId(), List.of());
             event.setConfirmedRequests(requests.size());
         }
         return result;
     }
 
-    @Transactional
     @Override
     public EventFullDto updateEventFromAdmin(Long eventId, UpdateEventRequest update) {
-        if (update == null) {
-            return null;
-        }
-
         Event tempEvent = checkEvent(eventId);
         checkEventState(tempEvent.getState());
         Category cat = checkCategory(update.getCategory());
@@ -134,14 +130,9 @@ public class EventServiceImpl implements EventService {
             }
         }
 
-        EventFullDto eventFullDto = EventDtoMapper.toEventFullDto(updatedEvent);
-        eventFullDto.setConfirmedRequests(getConfirmedRequestsCount(List.of(updatedEvent)).get(0L).size());
-        eventFullDto.setViews(getViewsAllEvents(List.of(updatedEvent)).get(0L));
-
-        return eventFullDto;
+        return EventDtoMapper.toEventFullDto(eventRepository.save(updatedEvent));
     }
 
-    @Transactional
     @Override
     public EventFullDto addNewEvent(Long userId, NewEventDto dto) {
         User user = checkUser(userId);
@@ -171,7 +162,6 @@ public class EventServiceImpl implements EventService {
         return EventDtoMapper.toEventFullDto(checkEventExistForUser(userId, eventId));
     }
 
-    @Transactional
     @Override
     public EventFullDto updateUserEventById(Long userId, Long eventId, UpdateEventRequest update) {
         checkUser(userId);
@@ -199,7 +189,6 @@ public class EventServiceImpl implements EventService {
         return EventDtoMapper.toEventFullDto(eventRepository.save(updatedEv));
     }
 
-    @Transactional
     @Override
     public EventRequestStatusUpdateResult updateEventStatusRequest(Long userId, Long eventId, EventRequestStatusUpdateRequest update) {
         checkUser(userId);
@@ -312,8 +301,9 @@ public class EventServiceImpl implements EventService {
                 criteriaBuilder.equal(root.get("state"), EventState.PUBLISHED));
 
         List<Event> resultEvents = eventRepository.findAll(specification, pageable).getContent();
-        List<EventShortDto> result = resultEvents
-                .stream().map(EventDtoMapper::toEventShortDto).collect(Collectors.toList());
+        List<EventShortDto> result = resultEvents.stream()
+                .map(EventDtoMapper::toEventShortDto)
+                .collect(Collectors.toList());
         Map<Long, Integer> viewStatsMap = getViewsAllEvents(resultEvents);
 
         for (EventShortDto event : result) {
@@ -457,7 +447,7 @@ public class EventServiceImpl implements EventService {
                 .app("ewm-service")
                 .uri(request.getRequestURI())
                 .ip(request.getRemoteAddr())
-                .timestamp(LocalDateTime.now().toString())
+                .timestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
                 .build());
     }
 

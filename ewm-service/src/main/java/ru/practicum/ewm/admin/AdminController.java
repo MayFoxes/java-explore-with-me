@@ -30,6 +30,7 @@ import ru.practicum.ewm.users.service.UserService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
@@ -93,7 +94,7 @@ public class AdminController {
     }
 
     @PatchMapping("/events/{eventId}")
-    public EventFullDto updateEventAdmin(@PathVariable Long eventId,
+    public EventFullDto updateEventAdmin(@PathVariable @Min(1) Long eventId,
                                          @RequestBody @Valid UpdateEventRequest update) {
         log.info("PATCH request to update event");
         return eventService.updateEventFromAdmin(eventId, update);

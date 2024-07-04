@@ -80,7 +80,7 @@ public class RequestServiceImpl implements RequestService {
 
     private void validateNewRequest(Event event, Long userId, Long eventId) {
         if (event.getInitiator().getId().equals(userId)) {
-            throw new ConflictException(String.format("User:%d is not a initiator of event:%d.", userId, eventId));
+            throw new ConflictException(String.format("User:%d can not be a initiator of event:%d.", userId, eventId));
         }
         if (event.getParticipantLimit() > 0 && event.getParticipantLimit() <= requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED)) {
             throw new ConflictException("Participant limit is exceeded.");
