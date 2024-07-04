@@ -3,13 +3,13 @@ package ru.practicum.ewm.events.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.EndpointHit;
 import ru.practicum.ewm.ViewStats;
 import ru.practicum.ewm.category.model.Category;
@@ -54,7 +54,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
+@Transactional(readOnly = true)
 public class EventServiceImpl implements EventService {
     private final StatsClient statsClient;
     private final EventRepository eventRepository;
@@ -111,14 +111,14 @@ public class EventServiceImpl implements EventService {
         return result;
     }
 
+    @Transactional
     @Override
     public EventFullDto updateEventFromAdmin(Long eventId, UpdateEventRequest update) {
         Event tempEvent = checkEvent(eventId);
         checkEventState(tempEvent.getState());
-        Category cat = checkCategory(update.getCategory());
         checkDateAndTime(update.getEventDate());
         Event updatedEvent = EventDtoMapper.toUpdate(tempEvent, update);
-        updatedEvent.setCategory(cat);
+        updatedEvent.setCategory(update.getCategory() == null ? tempEvent.getCategory() : checkCategory(update.getCategory()));
         UpdateEventState state = update.getState();
 
         if (state != null) {
@@ -133,6 +133,7 @@ public class EventServiceImpl implements EventService {
         return EventDtoMapper.toEventFullDto(eventRepository.save(updatedEvent));
     }
 
+    @Transactional
     @Override
     public EventFullDto addNewEvent(Long userId, NewEventDto dto) {
         User user = checkUser(userId);
@@ -162,15 +163,16 @@ public class EventServiceImpl implements EventService {
         return EventDtoMapper.toEventFullDto(checkEventExistForUser(userId, eventId));
     }
 
+    @Transactional
     @Override
     public EventFullDto updateUserEventById(Long userId, Long eventId, UpdateEventRequest update) {
         checkUser(userId);
         Event tempEvent = checkEventExistForUser(userId, eventId);
         if (tempEvent.getState().equals(EventState.PUBLISHED)) {
-            throw new ConflictException("Статус события не может быть обновлен, так как со статусом PUBLISHED");
+            throw new ConflictException("The event status cannot be updated because the status is PUBLISHED");
         }
         if (!tempEvent.getInitiator().getId().equals(userId)) {
-            throw new ConflictException("Пользователь с id= " + userId + " не автор события");
+            throw new ConflictException("The User:" + userId + " is not the author of the event");
         }
         Event updatedEv = EventDtoMapper.toUpdate(tempEvent, update);
         checkDateAndTime(updatedEv.getEventDate());
@@ -189,6 +191,7 @@ public class EventServiceImpl implements EventService {
         return EventDtoMapper.toEventFullDto(eventRepository.save(updatedEv));
     }
 
+    @Transactional
     @Override
     public EventRequestStatusUpdateResult updateEventStatusRequest(Long userId, Long eventId, EventRequestStatusUpdateRequest update) {
         checkUser(userId);
@@ -344,7 +347,7 @@ public class EventServiceImpl implements EventService {
 
     private void checkDateAndTime(LocalDateTime dateTime) {
         if (dateTime.isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new ConflictException("Event date has to be at least 2 hours after current moment");
+            throw new ValidationException("Event date has to be at least 2 hours after current moment");
         }
     }
 

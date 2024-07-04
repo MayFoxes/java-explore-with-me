@@ -10,11 +10,11 @@ import ru.practicum.ewm.request.model.enums.RequestStatus;
 
 import java.time.LocalDateTime;
 
+@Builder
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class ParticipationRequestDto {
     private Long id;
     private Long event;

@@ -1,6 +1,6 @@
 package ru.practicum.ewm.category.controller;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,15 +16,15 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/categories")
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 public class CategoryController {
 
     private final CategoryService categoryService;
 
     @GetMapping
-    public List<CategoryDto> getCategories(@PositiveOrZero @RequestParam(defaultValue = "0") Integer from,
-                                           @Positive @RequestParam(defaultValue = "10") Integer size) {
+    public List<CategoryDto> getCategories(@RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+                                           @RequestParam(defaultValue = "10") @Positive Integer size) {
         log.info("GET request to get all categories from:{} with size:{}", from, size);
         return categoryService.getAllCategories(from, size);
     }

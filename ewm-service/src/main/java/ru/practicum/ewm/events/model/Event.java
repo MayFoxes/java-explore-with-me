@@ -2,8 +2,9 @@ package ru.practicum.ewm.events.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.events.model.enums.EventState;
 import ru.practicum.ewm.users.model.User;
@@ -19,11 +20,12 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import java.time.LocalDateTime;
 
-@Data
 @Builder
-@Entity(name = "EVENTS")
-@AllArgsConstructor
+@Getter
+@Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Entity(name = "EVENTS")
 public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

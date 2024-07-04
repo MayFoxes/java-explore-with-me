@@ -2,6 +2,7 @@ package ru.practicum.ewm.request.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.events.model.Event;
 import ru.practicum.ewm.events.model.enums.EventState;
 import ru.practicum.ewm.events.repository.EventRepository;
@@ -21,12 +22,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class RequestServiceImpl implements RequestService {
     private final RequestRepository requestRepository;
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
 
+    @Transactional
     @Override
     public ParticipationRequestDto addNewRequest(Long userId, Long eventId) {
         User user = checkUser(userId);
@@ -51,6 +54,7 @@ public class RequestServiceImpl implements RequestService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     @Override
     public ParticipationRequestDto cancelRequest(Long userId, Long requestId) {
         checkUser(userId);

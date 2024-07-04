@@ -1,7 +1,10 @@
 package ru.practicum.ewm.compilation.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import ru.practicum.ewm.events.model.Event;
 
 import javax.persistence.Column;
@@ -14,8 +17,11 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import java.util.Set;
 
-@Data
 @Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity(name = "compilations")
 public class Compilation {
     @Id
