@@ -22,15 +22,15 @@ public class StatsRepositoryImpl implements StatsRepository {
     public void saveHit(EndpointHit hit) {
         LocalDateTime dateTime = LocalDateTime.parse(hit.getTimestamp(), DateTimeFormatter.ofPattern(Constant.DATE_FORMAT));
 
-        jdbcTemplate.update("INSERT INTO stats (app, uri, ip, request_time) VALUES (?, ?, ?, ?)",
+        jdbcTemplate.update("INSERT INTO stats (app, uri, ip, created) VALUES (?, ?, ?, ?)",
                 hit.getApp(), hit.getUri(), hit.getIp(), dateTime);
     }
 
     @Override
     public List<ViewStats> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
         StringBuilder query = new StringBuilder(unique ?
-                "SELECT app, uri, COUNT (DISTINCT ip) AS hits FROM stats WHERE (request_time >= ? AND request_time <= ?) " :
-                "SELECT app, uri, COUNT (ip) AS hits FROM stats WHERE (request_time >= ? AND request_time <= ?) ");
+                "SELECT app, uri, COUNT (DISTINCT ip) AS hits FROM stats WHERE (created >= ? AND created <= ?) " :
+                "SELECT app, uri, COUNT (ip) AS hits FROM stats WHERE (created >= ? AND created <= ?) ");
 
         if (!uris.isEmpty()) {
             query.append("AND uri IN ('").append(String.join("', '", uris)).append("') ");

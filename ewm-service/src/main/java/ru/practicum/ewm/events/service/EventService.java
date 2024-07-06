@@ -32,7 +32,7 @@ public interface EventService {
 
     List<ParticipationRequestDto> getAllRequestsFromEventByOwner(Long userId, Long eventId);
 
-    List<EventShortDto> getAllEvents(EventParams params, HttpServletRequest request);
+    List<EventShortDto> getAllEvents(EventParams params, HttpServletRequest request, Integer from, Integer size);
 
     EventFullDto getEventById(Long eventId, HttpServletRequest request);
 

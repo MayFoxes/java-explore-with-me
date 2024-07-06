@@ -1,12 +1,16 @@
 package ru.practicum.ewm;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.ToString;
 
-@Data
 @Builder
+@Getter
+@AllArgsConstructor
+@ToString
 public class ViewStats {
-    private final String app;
-    private final String uri;
-    private final Integer hits;
+    private String app;
+    private String uri;
+    private Integer hits;
 }

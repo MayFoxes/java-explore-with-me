@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.ewm.events.dto.EventFullDto;
 import ru.practicum.ewm.events.dto.EventParams;
@@ -13,6 +14,8 @@ import ru.practicum.ewm.events.service.EventService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
@@ -24,9 +27,11 @@ public class EventPublicController {
 
     @GetMapping
     public List<EventShortDto> getAllEvents(@Valid EventParams params,
-                                            HttpServletRequest request) {
+                                            HttpServletRequest request,
+                                            @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+                                            @RequestParam(defaultValue = "10") @Positive Integer size) {
         log.info("GET request to get all events with params");
-        return eventService.getAllEvents(params, request);
+        return eventService.getAllEvents(params, request, from, size);
     }
 
     @GetMapping("/{eventId}")

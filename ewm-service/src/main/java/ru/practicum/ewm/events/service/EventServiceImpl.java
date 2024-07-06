@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -179,6 +178,9 @@ public class EventServiceImpl implements EventService {
             checkDateAndTime(update.getEventDate());
         }
         Event updatedEv = EventDtoMapper.toUpdate(tempEvent, update);
+        updatedEv.setLocation((update.getLocation() == null) ? tempEvent.getLocation() : locationRepository.save(update.getLocation()));
+        updatedEv.setCategory((update.getCategory() == null) ? tempEvent.getCategory() : checkCategory(update.getCategory()));
+
         EventUserState stateAction = update.getStateAction();
         if (stateAction != null) {
             switch (stateAction) {
@@ -265,18 +267,14 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public List<EventShortDto> getAllEvents(EventParams params, HttpServletRequest request) {
+    public List<EventShortDto> getAllEvents(EventParams params, HttpServletRequest request, Integer from, Integer size) {
         if (params.getRangeEnd() != null && params.getRangeStart() != null &&
                 params.getRangeEnd().isBefore(params.getRangeStart())) {
             throw new ValidationException("End time has to be after Start time.");
         }
         addStatsClient(request);
-        Pagination pageable = (params.getSort() != null) ?
-                new Pagination(params.getFrom(), params.getSize(), Sort.by(Sort.Direction.ASC, params.getSort())) :
-                new Pagination(params.getFrom(), params.getSize());
-
+        Pagination page = new Pagination(from, size);
         Specification<Event> specification = Specification.where(null);
-        LocalDateTime now = LocalDateTime.now();
 
         if (params.getText() != null) {
             String searchText = params.getText().toLowerCase();
@@ -292,7 +290,7 @@ public class EventServiceImpl implements EventService {
                     root.get("category").get("id").in(params.getCategories()));
         }
 
-        LocalDateTime startDateTime = Objects.requireNonNullElse(params.getRangeStart(), now);
+        LocalDateTime startDateTime = Objects.requireNonNullElse(params.getRangeStart(), LocalDateTime.now());
         specification = specification.and((root, query, criteriaBuilder) ->
                 criteriaBuilder.greaterThan(root.get("eventDate"), startDateTime));
 
@@ -309,15 +307,14 @@ public class EventServiceImpl implements EventService {
         specification = specification.and((root, query, criteriaBuilder) ->
                 criteriaBuilder.equal(root.get("eventStatus"), EventState.PUBLISHED));
 
-        List<Event> resultEvents = eventRepository.findAll(specification, pageable).getContent();
+        List<Event> resultEvents = eventRepository.findAll(specification, page).getContent();
         List<EventShortDto> result = resultEvents.stream()
                 .map(EventDtoMapper::toEventShortDto)
                 .collect(Collectors.toList());
         Map<Long, Integer> viewStatsMap = getViewsAllEvents(resultEvents);
 
         for (EventShortDto event : result) {
-            Integer viewsFromMap = viewStatsMap.getOrDefault(event.getId(), 0);
-            event.setViews(viewsFromMap);
+            event.setViews(viewStatsMap.getOrDefault(event.getId(), 0));
         }
         return result;
     }
@@ -328,7 +325,6 @@ public class EventServiceImpl implements EventService {
         if (!event.getEventStatus().equals(EventState.PUBLISHED)) {
             throw new NotFoundException(String.format("Event:%d is not PUBLISHED", eventId));
         }
-
         addStatsClient(request);
         EventFullDto eventFullDto = EventDtoMapper.toEventFullDto(event);
         Map<Long, Integer> viewStatsMap = getViewsAllEvents(List.of(event));
