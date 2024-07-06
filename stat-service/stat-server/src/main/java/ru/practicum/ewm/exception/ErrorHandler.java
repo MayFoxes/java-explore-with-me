@@ -7,6 +7,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
@@ -19,11 +20,13 @@ public class ErrorHandler {
     @ExceptionHandler({MethodArgumentNotValidException.class, MissingRequestHeaderException.class,
             ConstraintViolationException.class, MissingServletRequestParameterException.class,
             ValidationException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse badRequest(final Exception e) {
         return handleException(e, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse internalServerError(final Exception e) {
         return handleException(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }

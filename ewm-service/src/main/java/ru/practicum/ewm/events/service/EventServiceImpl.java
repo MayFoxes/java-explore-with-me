@@ -22,9 +22,11 @@ import ru.practicum.ewm.events.dto.EventRequestStatusUpdateResult;
 import ru.practicum.ewm.events.dto.EventShortDto;
 import ru.practicum.ewm.events.dto.NewEventDto;
 import ru.practicum.ewm.events.dto.UpdateEventAdminRequest;
+import ru.practicum.ewm.events.dto.UpdateEventRequest;
 import ru.practicum.ewm.events.dto.UpdateEventUserRequest;
 import ru.practicum.ewm.events.dto.UpdatedStatusDto;
 import ru.practicum.ewm.events.model.Event;
+import ru.practicum.ewm.events.model.Location;
 import ru.practicum.ewm.events.model.enums.EventAdminState;
 import ru.practicum.ewm.events.model.enums.EventState;
 import ru.practicum.ewm.events.model.enums.EventUserState;
@@ -44,7 +46,6 @@ import ru.practicum.ewm.utility.Pagination;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -116,21 +117,37 @@ public class EventServiceImpl implements EventService {
     public EventFullDto updateEventFromAdmin(Long eventId, UpdateEventAdminRequest update) {
         Event tempEvent = checkEvent(eventId);
         checkEventState(tempEvent.getEventStatus());
-        checkDateAndTime(update.getEventDate());
-        Event updatedEvent = EventDtoMapper.toUpdate(tempEvent, update);
-        updatedEvent.setCategory(update.getCategory() == null ? tempEvent.getCategory() : checkCategory(update.getCategory()));
-        EventAdminState state = update.getStateAction();
-
-        if (state != null) {
-            if (state.equals(EventAdminState.PUBLISH_EVENT)) {
-                updatedEvent.setEventStatus(EventState.PUBLISHED);
-                updatedEvent.setPublisherDate(LocalDateTime.now());
-            } else if (state.equals(EventAdminState.REJECT_EVENT)) {
-                updatedEvent.setEventStatus(EventState.CANCELED);
+        boolean hasChanges = false;
+        Event eventForUpdate = universalUpdate(tempEvent, update);
+        if (eventForUpdate == null) {
+            eventForUpdate = tempEvent;
+        } else {
+            hasChanges = true;
+        }
+        LocalDateTime gotEventDate = update.getEventDate();
+        if (gotEventDate != null) {
+            if (gotEventDate.isBefore(LocalDateTime.now().plusHours(1))) {
+                throw new ValidationException("Некорректные параметры даты.Дата начала " +
+                        "изменяемого события должна " + "быть не ранее чем за час от даты публикации.");
+            }
+            eventForUpdate.setEventDate(update.getEventDate());
+            hasChanges = true;
+        }
+        EventAdminState gotAction = update.getStateAction();
+        if (gotAction != null) {
+            if (EventAdminState.PUBLISH_EVENT.equals(gotAction)) {
+                eventForUpdate.setEventStatus(EventState.PUBLISHED);
+                hasChanges = true;
+            } else if (EventAdminState.REJECT_EVENT.equals(gotAction)) {
+                eventForUpdate.setEventStatus(EventState.CANCELED);
+                hasChanges = true;
             }
         }
-
-        return EventDtoMapper.toEventFullDto(eventRepository.save(updatedEvent));
+        Event eventAfterUpdate = null;
+        if (hasChanges) {
+            eventAfterUpdate = eventRepository.save(eventForUpdate);
+        }
+        return eventAfterUpdate != null ? EventDtoMapper.toEventFullDto(eventAfterUpdate) : null;
     }
 
     @Transactional
@@ -145,7 +162,7 @@ public class EventServiceImpl implements EventService {
         event.setLocation(locationRepository.save(dto.getLocation()));
         Event eventSaved = eventRepository.save(event);
         EventFullDto eventFullDto = EventDtoMapper.toEventFullDto(eventSaved);
-        eventFullDto.setViews(0);
+        eventFullDto.setViews(0L);
         eventFullDto.setConfirmedRequests(0);
         return eventFullDto;
     }
@@ -167,33 +184,43 @@ public class EventServiceImpl implements EventService {
     @Override
     public EventFullDto updateUserEventById(Long userId, Long eventId, UpdateEventUserRequest update) {
         checkUser(userId);
-        Event tempEvent = checkEventExistForUser(userId, eventId);
-        if (tempEvent.getEventStatus().equals(EventState.PUBLISHED)) {
-            throw new ConflictException("The event status cannot be updated because the status is PUBLISHED");
+        Event oldEvent = checkEventExistForUser(userId, eventId);
+        if (oldEvent.getEventStatus().equals(EventState.PUBLISHED)) {
+            throw new ConflictException("Статус события не может быть обновлен, так как со статусом PUBLISHED");
         }
-        if (!tempEvent.getInitiator().getId().equals(userId)) {
-            throw new ConflictException("The User:" + userId + " is not the author of the event");
+        if (!oldEvent.getInitiator().getId().equals(userId)) {
+            throw new ConflictException("Пользователь с id= " + userId + " не автор события");
+        }
+        Event eventForUpdate = universalUpdate(oldEvent, update);
+        boolean hasChanges = false;
+        if (eventForUpdate == null) {
+            eventForUpdate = oldEvent;
+        } else {
+            hasChanges = true;
         }
         if (update.getEventDate() != null) {
             checkDateAndTime(update.getEventDate());
+            eventForUpdate.setEventDate(update.getEventDate());
+            hasChanges = true;
         }
-        Event updatedEv = EventDtoMapper.toUpdate(tempEvent, update);
-        updatedEv.setLocation((update.getLocation() == null) ? tempEvent.getLocation() : locationRepository.save(update.getLocation()));
-        updatedEv.setCategory((update.getCategory() == null) ? tempEvent.getCategory() : checkCategory(update.getCategory()));
-
         EventUserState stateAction = update.getStateAction();
         if (stateAction != null) {
             switch (stateAction) {
                 case SEND_TO_REVIEW:
-                    updatedEv.setEventStatus(EventState.PENDING);
+                    eventForUpdate.setEventStatus(EventState.PENDING);
+                    hasChanges = true;
                     break;
                 case CANCEL_REVIEW:
-                    updatedEv.setEventStatus(EventState.CANCELED);
+                    eventForUpdate.setEventStatus(EventState.CANCELED);
+                    hasChanges = true;
                     break;
             }
         }
-
-        return EventDtoMapper.toEventFullDto(eventRepository.save(updatedEv));
+        Event eventAfterUpdate = null;
+        if (hasChanges) {
+            eventAfterUpdate = eventRepository.save(eventForUpdate);
+        }
+        return eventAfterUpdate != null ? EventDtoMapper.toEventFullDto(eventAfterUpdate) : null;
     }
 
     @Transactional
@@ -311,10 +338,10 @@ public class EventServiceImpl implements EventService {
         List<EventShortDto> result = resultEvents.stream()
                 .map(EventDtoMapper::toEventShortDto)
                 .collect(Collectors.toList());
-        Map<Long, Integer> viewStatsMap = getViewsAllEvents(resultEvents);
+        Map<Long, Long> viewStatsMap = getViewsAllEvents(resultEvents);
 
         for (EventShortDto event : result) {
-            event.setViews(viewStatsMap.getOrDefault(event.getId(), 0));
+            event.setViews(viewStatsMap.getOrDefault(event.getId(), 0L));
         }
         return result;
     }
@@ -327,8 +354,8 @@ public class EventServiceImpl implements EventService {
         }
         addStatsClient(request);
         EventFullDto eventFullDto = EventDtoMapper.toEventFullDto(event);
-        Map<Long, Integer> viewStatsMap = getViewsAllEvents(List.of(event));
-        Integer views = viewStatsMap.getOrDefault(event.getId(), 0);
+        Map<Long, Long> viewStatsMap = getViewsAllEvents(List.of(event));
+        Long views = viewStatsMap.getOrDefault(event.getId(), 0L);
         eventFullDto.setViews(views);
         return eventFullDto;
     }
@@ -378,7 +405,7 @@ public class EventServiceImpl implements EventService {
                 .collect(Collectors.groupingBy(r -> r.getEvent().getId()));
     }
 
-    private Map<Long, Integer> getViewsAllEvents(List<Event> events) {
+    private Map<Long, Long> getViewsAllEvents(List<Event> events) {
         List<String> uris = events.stream()
                 .map(event -> String.format("/events/%s", event.getId()))
                 .collect(Collectors.toList());
@@ -389,10 +416,10 @@ public class EventServiceImpl implements EventService {
         LocalDateTime earliestDate = startDates.stream()
                 .min(LocalDateTime::compareTo)
                 .orElse(null);
-        Map<Long, Integer> viewStatsMap = new HashMap<>();
+        Map<Long, Long> viewStatsMap = new HashMap<>();
 
         if (earliestDate != null) {
-            ResponseEntity<Object> response = statsClient.getHit(earliestDate.toString(), LocalDateTime.now().toString(),
+            ResponseEntity<Object> response = statsClient.getHit(earliestDate, LocalDateTime.now(),
                     uris, true);
 
             List<ViewStats> viewStatsList = objectMapper.convertValue(response.getBody(), new TypeReference<>() {
@@ -453,8 +480,57 @@ public class EventServiceImpl implements EventService {
                 .app("ewm-service")
                 .uri(request.getRequestURI())
                 .ip(request.getRemoteAddr())
-                .timestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+                .timestamp(LocalDateTime.now())
                 .build());
+    }
+
+    private Event universalUpdate(Event oldEvent, UpdateEventRequest updateEvent) {
+        boolean hasChanges = false;
+        String gotAnnotation = updateEvent.getAnnotation();
+        if (gotAnnotation != null && !gotAnnotation.isBlank()) {
+            oldEvent.setAnnotation(gotAnnotation);
+            hasChanges = true;
+        }
+        Long gotCategory = updateEvent.getCategory();
+        if (gotCategory != null) {
+            Category category = checkCategory(gotCategory);
+            oldEvent.setCategory(category);
+            hasChanges = true;
+        }
+        String gotDescription = updateEvent.getDescription();
+        if (gotDescription != null && !gotDescription.isBlank()) {
+            oldEvent.setDescription(gotDescription);
+            hasChanges = true;
+        }
+        if (updateEvent.getLocation() != null) {
+            Location location = updateEvent.getLocation();
+            oldEvent.setLocation(location);
+            hasChanges = true;
+        }
+        Integer gotParticipantLimit = updateEvent.getParticipantLimit();
+        if (gotParticipantLimit != null) {
+            oldEvent.setParticipantLimit(gotParticipantLimit);
+            hasChanges = true;
+        }
+        if (updateEvent.getPaid() != null) {
+            oldEvent.setPaid(updateEvent.getPaid());
+            hasChanges = true;
+        }
+        Boolean requestModeration = updateEvent.getRequestModeration();
+        if (requestModeration != null) {
+            oldEvent.setRequestModeration(requestModeration);
+            hasChanges = true;
+        }
+        String gotTitle = updateEvent.getTitle();
+        if (gotTitle != null && !gotTitle.isBlank()) {
+            oldEvent.setTitle(gotTitle);
+            hasChanges = true;
+        }
+        if (!hasChanges) {
+
+            oldEvent = null;
+        }
+        return oldEvent;
     }
 
 }

@@ -56,24 +56,6 @@ public class EventDtoMapper {
                 .build();
     }
 
-    public Event toUpdate(Event event, UpdateEventRequest request) {
-        return Event.builder()
-                .id(event.getId())
-                .annotation(request.getAnnotation().isBlank() ? event.getAnnotation() : request.getAnnotation())
-                .description(request.getDescription().isBlank() ? event.getDescription() : request.getDescription())
-                .title(request.getTitle().isBlank() ? event.getTitle() : request.getTitle())
-                .participantLimit(request.getParticipantLimit() == null ? event.getParticipantLimit() : request.getParticipantLimit())
-                .paid(request.getPaid() == null ? event.getPaid() : request.getPaid())
-                .requestModeration(request.getRequestModeration() == null ? event.getRequestModeration() : request.getRequestModeration())
-                .location(event.getLocation())
-                .category(event.getCategory())
-                .initiator(event.getInitiator())
-                .createdDate(event.getCreatedDate())
-                .eventStatus(event.getEventStatus())
-                .eventDate(request.getEventDate() == null ? event.getEventDate() : request.getEventDate())
-                .build();
-    }
-
     public List<EventShortDto> toEventShortDtos(List<Event> events) {
         return events.stream()
                 .map(EventDtoMapper::toEventShortDto)

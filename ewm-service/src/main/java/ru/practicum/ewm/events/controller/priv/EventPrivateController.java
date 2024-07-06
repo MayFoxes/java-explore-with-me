@@ -48,7 +48,7 @@ public class EventPrivateController {
     @ResponseStatus(HttpStatus.CREATED)
     public EventFullDto addEvent(@PathVariable Long userId,
                                  @RequestBody @Valid NewEventDto dto) {
-        log.info("POST request from user:{} to add event", userId);
+        log.info("POST request from user:{} to add event:{}", userId, dto.getTitle());
         return eventService.addNewEvent(userId, dto);
     }
 
