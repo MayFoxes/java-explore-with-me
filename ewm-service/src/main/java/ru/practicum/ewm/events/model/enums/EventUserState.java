@@ -1,5 +1,6 @@
 package ru.practicum.ewm.events.model.enums;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 public enum EventUserState {
@@ -7,11 +8,8 @@ public enum EventUserState {
     CANCEL_REVIEW;
 
     public static Optional<EventUserState> from(String stringState) {
-        for (EventUserState state : values()) {
-            if (state.name().equalsIgnoreCase(stringState)) {
-                return Optional.of(state);
-            }
-        }
-        return Optional.empty();
+        return Arrays.stream(values())
+                .filter(s -> s.name().equalsIgnoreCase(stringState))
+                .findFirst();
     }
 }

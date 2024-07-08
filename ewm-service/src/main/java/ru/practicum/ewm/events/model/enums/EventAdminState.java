@@ -1,5 +1,6 @@
 package ru.practicum.ewm.events.model.enums;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 public enum EventAdminState {
@@ -7,11 +8,8 @@ public enum EventAdminState {
     REJECT_EVENT;
 
     public static Optional<EventAdminState> from(String stringState) {
-        for (EventAdminState state : values()) {
-            if (state.name().equalsIgnoreCase(stringState)) {
-                return Optional.of(state);
-            }
-        }
-        return Optional.empty();
+        return Arrays.stream(values())
+                .filter(s -> s.name().equalsIgnoreCase(stringState))
+                .findFirst();
     }
 }

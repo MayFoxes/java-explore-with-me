@@ -42,7 +42,7 @@ public class CategoryServiceImpl implements CategoryService {
         if (!events.isEmpty()) {
             throw new ConflictException("Can't delete category due to using for some events");
         }
-        categoryRepository.delete(checkExist(id));
+        categoryRepository.delete(category);
     }
 
     @Override
