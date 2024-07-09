@@ -473,15 +473,15 @@
 											"pm.expect(target).to.have.property('created');\r",
 											"});\r",
 											"\r",
+											"let jsonData = pm.response.json();\r",
+											"pm.collectionVariables.set('com1', jsonData.id);\r",
+											"\r",
 											"pm.test(\"Данные в ответе должны соответствовать данным в запросе\", function () {\r",
 											"    pm.expect(target.id).to.not.be.null;\r",
 											"    pm.expect(source.comment).equal(target.comment);\r",
-											"    pm.expect(target.authorId).equal(pm.collectionVariables.get('uid2'));\r",
+											"    pm.expect(target.authorId).equal(jsonData.authorId);\r",
 											"});\r",
 											"\r",
-											"let jsonData = pm.response.json();\r",
-											"\r",
-											"pm.collectionVariables.set('com1', jsonData.id);\r",
 											""
 										],
 										"type": "text/javascript",
@@ -494,7 +494,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"comment\": \"Comment for event from user \"\r\n}",
+									"raw": "{\r\n    \"comment\": \"Comment for event from user\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -611,8 +611,8 @@
 											"pm.test(\"Данные в ответе должны соответствовать данным в запросе\", function () {\r",
 											"    pm.expect(target.id).to.not.be.null;\r",
 											"    pm.expect(source.comment).equal(target.comment);\r",
-											"    pm.expect(target.id).equal(pm.collectionVariables.get('com1'));\r",
-											"    pm.expect(target.authorId).equal(pm.collectionVariables.get('uid2'));\r",
+											"    pm.expect(target.id).equal(pm.response.json().id);\r",
+											"    pm.expect(target.authorId).equal(pm.response.json().authorId);\r",
 											"});"
 										],
 										"type": "text/javascript",
@@ -933,7 +933,7 @@
 											"});\r",
 											"\r",
 											"const source = pm.collectionVariables.get('response');\r",
-											"const target = pm.response.json()[0];\r",
+											"const target = pm.response.json();\r",
 											"\r",
 											"pm.test(\"Событие должно содержать поля: id, title, annotation, category, paid, eventDate, initiator, views, confirmedRequests, comments\", function () {\r",
 											"pm.expect(target).to.have.property('id');\r",
@@ -947,7 +947,7 @@
 											"pm.expect(target).to.have.property('confirmedRequests');\r",
 											"pm.expect(target).to.have.property('comments');\r",
 											"});\r",
-											"pm.test(\"Данные в ответе должны соответствовать данным в запросе// у события с id=2 должно быть три комментария\", function () {\r",
+											"pm.test(\"Данные в ответе должны соответствовать данным в запросе// у события должно быть три комментария\", function () {\r",
 											"    pm.expect(target.comments).to.not.be.null;\r",
 											"    pm.expect(target.comments.length).equal(3);\r",
 											"});\r",
@@ -973,12 +973,19 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/events",
+									"raw": "{{baseUrl}}/events/:eventId",
 									"host": [
 										"{{baseUrl}}"
 									],
 									"path": [
-										"events"
+										"events",
+										":eventId"
+									],
+									"variable": [
+										{
+											"key": "eventId",
+											"value": "{{eid}}"
+										}
 									]
 								}
 							},
