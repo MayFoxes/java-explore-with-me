@@ -25,7 +25,7 @@ public class StatsServiceImpl implements StatsService {
     @Override
     @Transactional(readOnly = true)
     public List<ViewStats> getStatsList(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
-        if (start.isAfter(end)) {
+        if (end.isBefore(start)) {
             throw new ValidationException("The start date cannot be later than the end date");
         }
 
