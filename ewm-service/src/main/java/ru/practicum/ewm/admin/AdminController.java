@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.ewm.category.dto.NewCategoryDto;
 import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.category.service.CategoryService;
+import ru.practicum.ewm.comment.dto.CommentDto;
+import ru.practicum.ewm.comment.service.CommentService;
 import ru.practicum.ewm.compilation.dto.CompilationDto;
 import ru.practicum.ewm.compilation.dto.NewCompilationDto;
 import ru.practicum.ewm.compilation.dto.UpdateCompilationDto;
@@ -45,6 +47,7 @@ public class AdminController {
     private final CategoryService categoryService;
     private final EventService eventService;
     private final CompilationService compilationService;
+    private final CommentService commentService;
 
     @PostMapping("/categories")
     @ResponseStatus(HttpStatus.CREATED)
@@ -123,5 +126,20 @@ public class AdminController {
     public void deleteCompilation(@PathVariable Long compId) {
         log.info("DELETE request to delete compilation");
         compilationService.deleteCompilation(compId);
+    }
+
+    @DeleteMapping("/comments/{commentId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteComment(@PathVariable Long commentId) {
+        log.info("DELETE request from admin to delete a comment:{}", commentId);
+        commentService.deleteCommentByAdmin(commentId);
+    }
+
+    @GetMapping("/comments/search")
+    public List<CommentDto> searchComments(@RequestParam String text,
+                                           @RequestParam(defaultValue = "0") Integer from,
+                                           @RequestParam(defaultValue = "10") Integer size) {
+        log.info("GET request from admin to find comment by text:{}", text);
+        return commentService.findByText(text, from, size);
     }
 }
