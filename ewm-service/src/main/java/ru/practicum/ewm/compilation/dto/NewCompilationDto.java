@@ -16,7 +16,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NewCompilationDto {
-    private Boolean pinned;
+    private boolean pinned;
     @NotBlank
     @Size(min = 1, max = 50)
     private String title;

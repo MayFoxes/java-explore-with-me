@@ -233,7 +233,7 @@ public class EventServiceImpl implements EventService {
         checkUser(userId);
         Event tempEvent = checkEventExistForUser(userId, eventId);
 
-        if (!tempEvent.getRequestModeration() || tempEvent.getParticipantLimit() == 0) {
+        if (!tempEvent.isRequestModeration() || tempEvent.getParticipantLimit() == 0) {
             throw new ConflictException("This event does not require confirmation of requests.");
         }
 

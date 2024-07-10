@@ -20,5 +20,5 @@ public class CommentDto {
     private Long authorId;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime created;
-    private Boolean edited;
+    private boolean edited;
 }

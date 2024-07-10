@@ -34,7 +34,7 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     public CompilationDto addCompilation(NewCompilationDto compilationDto) {
         Compilation compilation = CompilationDtoMapper.toCompilation(compilationDto);
-        compilation.setPinned(Optional.ofNullable(compilation.getPinned()).orElse(false));
+        compilation.setPinned(Optional.of(compilation.isPinned()).orElse(false));
 
         Set<Long> compEventIds = (compilationDto.getEvents() != null) ? compilationDto.getEvents() : Collections.emptySet();
         List<Long> eventIds = new ArrayList<>(compEventIds);
@@ -59,7 +59,7 @@ public class CompilationServiceImpl implements CompilationService {
             compilation.setEvents(eventSet);
         }
 
-        compilation.setPinned(Optional.ofNullable(update.getPinned()).orElse(compilation.getPinned()));
+        compilation.setPinned(Optional.of(update.isPinned()).orElse(compilation.isPinned()));
         if (compilation.getTitle().isBlank()) {
             throw new ValidationException("Title can not be empty.");
         }

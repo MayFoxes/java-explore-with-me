@@ -38,5 +38,5 @@ public class Comment {
     @Column(name = "CREATED")
     private LocalDateTime created;
     @Column
-    private Boolean edited;
+    private boolean edited;
 }

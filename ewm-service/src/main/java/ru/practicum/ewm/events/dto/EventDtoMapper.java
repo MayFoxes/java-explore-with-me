@@ -35,10 +35,10 @@ public class EventDtoMapper {
                 .eventDate(event.getEventDate())
                 .initiator(UserDtoMapper.toShortDto(event.getInitiator()))
                 .location(event.getLocation())
-                .paid(event.getPaid())
+                .paid(event.isPaid())
                 .participantLimit(event.getParticipantLimit())
                 .publishedOn(event.getPublisherDate())
-                .requestModeration(event.getRequestModeration())
+                .requestModeration(event.isRequestModeration())
                 .state(event.getEventStatus())
                 .title(event.getTitle())
                 .build();
@@ -51,7 +51,7 @@ public class EventDtoMapper {
                 .category(CategoryDtoMapper.toDto(event.getCategory()))
                 .eventDate(event.getEventDate())
                 .initiator(UserDtoMapper.toShortDto(event.getInitiator()))
-                .paid(event.getPaid())
+                .paid(event.isPaid())
                 .title(event.getTitle())
                 .build();
     }

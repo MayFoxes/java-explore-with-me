@@ -17,7 +17,7 @@ public class CommentDtoMapper {
                 .comment(comment.getComment())
                 .authorId(comment.getAuthor().getId())
                 .created(comment.getCreated())
-                .edited(comment.getEdited())
+                .edited(comment.isEdited())
                 .build();
     }
 
