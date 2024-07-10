@@ -50,11 +50,11 @@ public class Event {
     @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "INITIATOR_ID")
     private User initiator;
-    private Boolean paid;
+    private boolean paid;
     @Column(name = "PARTICIPANT_LIMIT")
     private Integer participantLimit;
     @Column(name = "REQUEST_MODERATION")
-    private Boolean requestModeration;
+    private boolean requestModeration;
     @Column(nullable = false, length = 120)
     private String title;
     @Enumerated(EnumType.STRING)

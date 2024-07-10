@@ -28,7 +28,7 @@ public interface EventService {
 
     EventFullDto updateUserEventById(Long userId, Long eventId, UpdateEventUserRequest update);
 
-    EventRequestStatusUpdateResult updateEventStatusRequest(Long userId, Long eventId, EventRequestStatusUpdateRequest update);
+    EventRequestStatusUpdateResult updateEventRequestStatus(Long userId, Long eventId, EventRequestStatusUpdateRequest update);
 
     List<ParticipationRequestDto> getAllRequestsFromEventByOwner(Long userId, Long eventId);
 

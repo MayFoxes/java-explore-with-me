@@ -14,14 +14,14 @@ public class CompilationDtoMapper {
                 .events(compilation.getEvents().stream()
                         .map(EventDtoMapper::toEventShortDto)
                         .collect(Collectors.toSet()))
-                .pinned(compilation.getPinned())
+                .pinned(compilation.isPinned())
                 .title(compilation.getTitle())
                 .build();
     }
 
     public Compilation toCompilation(NewCompilationDto compilationDto) {
         return Compilation.builder()
-                .pinned(compilationDto.getPinned())
+                .pinned(compilationDto.isPinned())
                 .title(compilationDto.getTitle())
                 .build();
     }
