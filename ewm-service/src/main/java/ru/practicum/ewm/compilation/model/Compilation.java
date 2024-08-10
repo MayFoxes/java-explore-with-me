@@ -32,7 +32,7 @@ public class Compilation {
             inverseJoinColumns = @JoinColumn(name = "EVENT_ID"))
     private Set<Event> events;
     @Column(name = "PINNED")
-    private Boolean pinned;
+    private boolean pinned;
     @Column(name = "TITLE", nullable = false, length = 50)
     private String title;
 }

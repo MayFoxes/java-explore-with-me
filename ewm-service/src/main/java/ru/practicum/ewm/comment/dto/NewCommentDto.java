@@ -1,4 +1,5 @@
-package ru.practicum.ewm.compilation.dto;
+package ru.practicum.ewm.comment.dto;
+
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,17 +9,14 @@ import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
-import java.util.Set;
 
-@Builder
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
-public class NewCompilationDto {
-    private boolean pinned;
+@NoArgsConstructor
+@Builder
+public class NewCommentDto {
     @NotBlank
-    @Size(min = 1, max = 50)
-    private String title;
-    private Set<Long> events;
+    @Size(min = 2, max = 500)
+    private String comment;
 }

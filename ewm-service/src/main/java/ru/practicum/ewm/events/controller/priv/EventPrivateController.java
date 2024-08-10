@@ -78,6 +78,6 @@ public class EventPrivateController {
                                                               @PathVariable Long eventId,
                                                               @RequestBody EventRequestStatusUpdateRequest update) {
         log.info("PATCH request from user:{} to update event status for event:{}", userId, eventId);
-        return eventService.updateEventStatusRequest(userId, eventId, update);
+        return eventService.updateEventRequestStatus(userId, eventId, update);
     }
 }

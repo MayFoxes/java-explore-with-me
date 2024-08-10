@@ -13,6 +13,9 @@ import ru.practicum.ewm.ViewStats;
 import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.category.repository.CategoryRepository;
 import ru.practicum.ewm.client.StatsClient;
+import ru.practicum.ewm.comment.dto.CommentDtoMapper;
+import ru.practicum.ewm.comment.module.Comment;
+import ru.practicum.ewm.comment.repository.CommentRepository;
 import ru.practicum.ewm.events.dto.AdminEventParams;
 import ru.practicum.ewm.events.dto.EventDtoMapper;
 import ru.practicum.ewm.events.dto.EventFullDto;
@@ -64,6 +67,7 @@ public class EventServiceImpl implements EventService {
     private final LocationRepository locationRepository;
     private final RequestRepository requestRepository;
     private final ObjectMapper objectMapper;
+    private final CommentRepository commentRepository;
 
     @Override
     public List<EventFullDto> getAllEventFromAdmin(AdminEventParams params) {
@@ -225,22 +229,24 @@ public class EventServiceImpl implements EventService {
 
     @Transactional
     @Override
-    public EventRequestStatusUpdateResult updateEventStatusRequest(Long userId, Long eventId, EventRequestStatusUpdateRequest update) {
+    public EventRequestStatusUpdateResult updateEventRequestStatus(Long userId, Long eventId, EventRequestStatusUpdateRequest update) {
         checkUser(userId);
         Event tempEvent = checkEventExistForUser(userId, eventId);
 
-        if (!tempEvent.getRequestModeration() || tempEvent.getParticipantLimit() == 0) {
+        if (!tempEvent.isRequestModeration() || tempEvent.getParticipantLimit() == 0) {
             throw new ConflictException("This event does not require confirmation of requests.");
         }
 
         RequestStatus status = update.getStatus();
 
         int confirmedRequestsCount = requestRepository.countByEventIdAndStatus(tempEvent.getId(), RequestStatus.CONFIRMED);
+
+        if (tempEvent.getParticipantLimit() == confirmedRequestsCount) {
+            throw new ConflictException("Participants limit has been reached.");
+        }
+
         switch (status) {
             case CONFIRMED:
-                if (tempEvent.getParticipantLimit() == confirmedRequestsCount) {
-                    throw new ConflictException("Participants limit has been reached.");
-                }
                 UpdatedStatusDto updatedStatusConfirm = updateStatus(tempEvent,
                         UpdatedStatusDto.builder()
                                 .updatedIds(update.getRequestIds())
@@ -255,17 +261,14 @@ public class EventServiceImpl implements EventService {
                 }
 
                 return EventRequestStatusUpdateResult.builder()
-                        .confirmedRequests(confirmedRequests
-                                .stream()
-                                .map(RequestDtoMapper::toParticipationRequestDto).collect(Collectors.toList()))
-                        .rejectedRequests(rejectedRequests
-                                .stream()
-                                .map(RequestDtoMapper::toParticipationRequestDto).collect(Collectors.toList()))
+                        .confirmedRequests(confirmedRequests.stream()
+                                .map(RequestDtoMapper::toParticipationRequestDto)
+                                .collect(Collectors.toList()))
+                        .rejectedRequests(rejectedRequests.stream()
+                                .map(RequestDtoMapper::toParticipationRequestDto)
+                                .collect(Collectors.toList()))
                         .build();
             case REJECTED:
-                if (tempEvent.getParticipantLimit() == confirmedRequestsCount) {
-                    throw new ConflictException("Participants limit has been reached.");
-                }
                 UpdatedStatusDto updatedStatusReject = updateStatus(tempEvent,
                         UpdatedStatusDto.builder()
                                 .updatedIds(update.getRequestIds())
@@ -274,9 +277,9 @@ public class EventServiceImpl implements EventService {
                 List<Request> rejectRequest = requestRepository.findAllById(updatedStatusReject.getProcessedIds());
 
                 return EventRequestStatusUpdateResult.builder()
-                        .rejectedRequests(rejectRequest
-                                .stream()
-                                .map(RequestDtoMapper::toParticipationRequestDto).collect(Collectors.toList()))
+                        .rejectedRequests(rejectRequest.stream()
+                                .map(RequestDtoMapper::toParticipationRequestDto)
+                                .collect(Collectors.toList()))
                         .build();
             default:
                 throw new ValidationException("Incorrect status:" + status);
@@ -340,8 +343,12 @@ public class EventServiceImpl implements EventService {
                 .collect(Collectors.toList());
         Map<Long, Long> viewStatsMap = getViewsAllEvents(resultEvents);
 
+
         for (EventShortDto event : result) {
             event.setViews(viewStatsMap.getOrDefault(event.getId(), 0L));
+
+            List<Comment> commentsFromEvent = commentRepository.findAllByEventId(event.getId(), new Pagination(0, 10));
+            event.setComments(CommentDtoMapper.toDtos(commentsFromEvent));
         }
         return result;
     }
@@ -357,6 +364,8 @@ public class EventServiceImpl implements EventService {
         Map<Long, Long> viewStatsMap = getViewsAllEvents(List.of(event));
         Long views = viewStatsMap.getOrDefault(event.getId(), 0L);
         eventFullDto.setViews(views);
+        List<Comment> comments = commentRepository.findAllByEventId(eventId, new Pagination(0, 10));
+        eventFullDto.setComments(CommentDtoMapper.toDtos(comments));
         return eventFullDto;
     }
 
